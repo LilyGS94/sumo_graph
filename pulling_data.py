@@ -18,7 +18,8 @@ class SumoApiQuery:
         self.session.mount('https://', adapter)
         self.session.mount('http://', adapter)
         # Create a directory named with the current timestamp
-        self.output_dir = datetime.now().strftime("%Y%m")
+        self.now = datetime.now().strftime("%Y%m")
+        self.output_dir = f"data/{self.now}"
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
