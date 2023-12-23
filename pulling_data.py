@@ -19,7 +19,7 @@ class SumoApiQuery:
         self.session.mount('http://', adapter)
         # Create a directory named with the current timestamp
         self.now = datetime.now().strftime("%Y%m")
-        self.output_dir = f"data/{self.now}"
+        self.output_dir = f"data/{self.now}/basho"
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
@@ -54,35 +54,19 @@ def generate_timestamps():
             timestamps.append(f'{year}{month}')
     return timestamps
 
+
 def setup_logging():
     logging.basicConfig(level=logging.INFO,
                         format='%(asctime)s - %(levelname)s - %(message)s',
-                        filename='sumo_api_query.log',
+                        filename='sumo_api_query_basho.log',
                         filemode='w')
 
-# def save_data_to_file(data, filename="sumo_data.json"):
-#     with open(filename, "w") as file:
-#         json.dump(data, file, indent=4)
-#     logging.info(f"Data successfully saved to {filename}")
 
 if __name__ == "__main__":
     setup_logging()
     timestamps = generate_timestamps()
     print(f"Generated {len(timestamps)} timestamps to query.")
-
     query = SumoApiQuery(timestamps)
     query.run_queries()
-
-    #sumo_api_query = SumoApiQuery(timestamps)
-
-    # print("Starting API queries...")
-    # with ThreadPoolExecutor(max_workers=10) as executor:  # Adjust max_workers as needed
-    #     executor.map(sumo_api_query.query_endpoint, timestamps)
-    #
-    # data = sumo_api_query.get_results()
-
-    #print("Saving data to file...")
-    #save_data_to_file(data)
-
     print("Process completed.")
 

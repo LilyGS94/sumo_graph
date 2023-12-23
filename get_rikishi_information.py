@@ -1,3 +1,4 @@
+import logging
 import os
 import json
 
@@ -15,7 +16,7 @@ class RikishiIDExtractor:
 
         # Sort directories by their timestamp
         latest_dir = max(all_dirs, key=os.path.getmtime)
-        return latest_dir
+        return f"{latest_dir}/basho"
 
     def extract_rikishi_ids_from_directory(self, directory):
         unique_rikishi_ids = set()
@@ -52,7 +53,20 @@ class RikishiIDExtractor:
             return "No directories found."
 
 # Usage example
-base_directory = 'data/'  # Replace with your base directory path
-extractor = RikishiIDExtractor(base_directory)
-unique_ids = extractor.process_latest_directory()
-print(unique_ids)
+# base_directory = 'data/'  # Replace with your base directory path
+# extractor = RikishiIDExtractor(base_directory)
+# unique_ids = extractor.process_latest_directory()
+# print(unique_ids)
+def setup_logging():
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s - %(levelname)s - %(message)s',
+                        filename='sumo_api_query_rikishi.log',
+                        filemode='w')
+if __name__ == "__main__":
+    setup_logging()
+    # Usage example
+    base_directory = 'data/'  # Replace with your base directory path
+    extractor = RikishiIDExtractor(base_directory)
+    unique_ids = extractor.process_latest_directory()
+    print(unique_ids)
+    print("Process completed.")
