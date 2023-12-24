@@ -1,10 +1,19 @@
 import logging
 import os
 import json
+from datetime import datetime
 
-class RikishiIDExtractor:
+from base_classes import SumoApiQuery
+
+
+class SumoApiQueryRikishi(SumoApiQuery):
     def __init__(self, base_directory):
+        super().__init__()
         self.base_directory = base_directory
+        self.base_url = "https://www.sumo-api.com/api/rikishi/{}?intai=true"
+        self.output_dir = f"data/{self.now}/rikishi"
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
 
     def get_latest_directory(self):
         # List all directories in the base directory
@@ -43,7 +52,7 @@ class RikishiIDExtractor:
             unique_rikishi_ids.update([id for id in east_rikishi_ids if id is not None])
             unique_rikishi_ids.update([id for id in west_rikishi_ids if id is not None])
 
-        return list(unique_rikishi_ids)
+        self.iters = list(unique_rikishi_ids)
 
     def process_latest_directory(self):
         latest_dir = self.get_latest_directory()
@@ -62,11 +71,14 @@ def setup_logging():
                         format='%(asctime)s - %(levelname)s - %(message)s',
                         filename='sumo_api_query_rikishi.log',
                         filemode='w')
+
+
 if __name__ == "__main__":
     setup_logging()
     # Usage example
     base_directory = 'data/'  # Replace with your base directory path
-    extractor = RikishiIDExtractor(base_directory)
-    unique_ids = extractor.process_latest_directory()
-    print(unique_ids)
+    query = SumoApiQueryRikishi(base_directory)
+    query.process_latest_directory()
+    print(f"Generated {len(query.iters)} rikishi ids to query.")
+    query.run_queries()
     print("Process completed.")

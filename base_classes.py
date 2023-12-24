@@ -24,8 +24,6 @@ class SumoApiQuery:
         # if self.endpoint == "rikishi":
         #     self.base_url = "https://www.sumo-api.com/api/rikishi/{}"
         #     self.output_dir = f"data/{self.now}/rikishi"
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
 
     def query_endpoint(self, iter_val):
         url = self.base_url.format(iter_val)

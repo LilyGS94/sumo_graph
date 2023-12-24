@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 
 from base_classes import SumoApiQuery
@@ -5,6 +6,8 @@ from base_classes import SumoApiQuery
 class SumoApiQueryBasho(SumoApiQuery):
     def __init__(self):
         super().__init__()
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
 
     def generate_timestamps(self):
         current_year = datetime.now().year
