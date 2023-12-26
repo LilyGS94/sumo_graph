@@ -1,7 +1,5 @@
-import logging
-import os
 import json
-from datetime import datetime
+import os
 
 from base_classes import SumoApiQuery
 
@@ -12,13 +10,17 @@ class SumoApiQueryRikishi(SumoApiQuery):
         self.base_directory = base_directory
         self.base_url = "https://www.sumo-api.com/api/rikishi/{}?intai=true"
         self.output_dir = f"data/{self.now}/rikishi"
+        self.log_file_name = "sumo_api_query_rikishi.log"
         if not os.path.exists(self.output_dir):
             os.makedirs(self.output_dir)
 
     def get_latest_directory(self):
         # List all directories in the base directory
-        all_dirs = [os.path.join(self.base_directory, d) for d in os.listdir(self.base_directory) 
-                    if os.path.isdir(os.path.join(self.base_directory, d))]
+        all_dirs = [
+            os.path.join(self.base_directory, d)
+            for d in os.listdir(self.base_directory)
+            if os.path.isdir(os.path.join(self.base_directory, d))
+        ]
 
         if not all_dirs:
             return None
@@ -31,7 +33,7 @@ class SumoApiQueryRikishi(SumoApiQuery):
         unique_rikishi_ids = set()
 
         # List all JSON files in the directory
-        json_files = [f for f in os.listdir(directory) if f.endswith('.json')]
+        json_files = [f for f in os.listdir(directory) if f.endswith(".json")]
 
         if not json_files:
             return unique_rikishi_ids
@@ -39,14 +41,30 @@ class SumoApiQueryRikishi(SumoApiQuery):
         for file_name in json_files:
             file_path = os.path.join(directory, file_name)
             try:
-                with open(file_path, 'r') as file:
+                with open(file_path) as file:
                     data = json.load(file)
             except json.JSONDecodeError:
                 continue
 
             # Check if 'east' and 'west' are not None before processing
-            east_rikishi_ids = [rikishi.get('rikishiID') for rikishi in data.get('east', []) if rikishi] if data.get('east') else []
-            west_rikishi_ids = [rikishi.get('rikishiID') for rikishi in data.get('west', []) if rikishi] if data.get('west') else []
+            east_rikishi_ids = (
+                [
+                    rikishi.get("rikishiID")
+                    for rikishi in data.get("east", [])
+                    if rikishi
+                ]
+                if data.get("east")
+                else []
+            )
+            west_rikishi_ids = (
+                [
+                    rikishi.get("rikishiID")
+                    for rikishi in data.get("west", [])
+                    if rikishi
+                ]
+                if data.get("west")
+                else []
+            )
 
             # Combine and deduplicate the list, removing any None values
             unique_rikishi_ids.update([id for id in east_rikishi_ids if id is not None])
@@ -61,22 +79,11 @@ class SumoApiQueryRikishi(SumoApiQuery):
         else:
             return "No directories found."
 
-# Usage example
-# base_directory = 'data/'  # Replace with your base directory path
-# extractor = RikishiIDExtractor(base_directory)
-# unique_ids = extractor.process_latest_directory()
-# print(unique_ids)
-def setup_logging():
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(levelname)s - %(message)s',
-                        filename='sumo_api_query_rikishi.log',
-                        filemode='w')
-
 
 if __name__ == "__main__":
-    setup_logging()
+    # setup_logging()
     # Usage example
-    base_directory = 'data/'  # Replace with your base directory path
+    base_directory = "data/"  # Replace with your base directory path
     query = SumoApiQueryRikishi(base_directory)
     query.process_latest_directory()
     print(f"Generated {len(query.iters)} rikishi ids to query.")
