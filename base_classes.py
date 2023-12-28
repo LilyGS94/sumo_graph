@@ -20,12 +20,11 @@ class SumoApiQuery:
         # Create a directory named with the current timestamp
         self.now = datetime.now().strftime("%Y%m")
         self.output_dir = f"data/{self.now}/basho"
-        # if self.endpoint == "rikishi":
-        #     self.base_url = "https://www.sumo-api.com/api/rikishi/{}"
-        #     self.output_dir = f"data/{self.now}/rikishi"
+        self.base_directory = "data/"
 
     def query_endpoint(self, iter_val):
         url = self.base_url.format(iter_val)
+        print(url)
         logging.info(f"Making API call for: {iter_val}")
         try:
             response = self.session.get(url)
@@ -48,5 +47,7 @@ class SumoApiQuery:
 
     def run_queries(self):
         self.setup_logging()
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
         with ThreadPoolExecutor() as executor:
             executor.map(self.query_endpoint, self.iters)

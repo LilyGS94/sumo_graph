@@ -5,14 +5,11 @@ from base_classes import SumoApiQuery
 
 
 class SumoApiQueryRikishi(SumoApiQuery):
-    def __init__(self, base_directory):
+    def __init__(self):
         super().__init__()
-        self.base_directory = base_directory
         self.base_url = "https://www.sumo-api.com/api/rikishi/{}?intai=true"
         self.output_dir = f"data/{self.now}/rikishi"
         self.log_file_name = "sumo_api_query_rikishi.log"
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
 
     def get_latest_directory(self):
         # List all directories in the base directory
@@ -81,10 +78,7 @@ class SumoApiQueryRikishi(SumoApiQuery):
 
 
 if __name__ == "__main__":
-    # setup_logging()
-    # Usage example
-    base_directory = "data/"  # Replace with your base directory path
-    query = SumoApiQueryRikishi(base_directory)
+    query = SumoApiQueryRikishi()
     query.process_latest_directory()
     print(f"Generated {len(query.iters)} rikishi ids to query.")
     query.run_queries()
