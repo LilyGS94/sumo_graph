@@ -24,16 +24,28 @@ class SumoApiQuery:
 
     def query_endpoint(self, iter_val):
         url = self.base_url.format(iter_val)
+        if not os.path.exists(self.output_dir):
+            os.makedirs(self.output_dir)
         logging.info(f"Making API call for: {iter_val}")
         try:
             response = self.session.get(url)
+            # Check if the response is empty
+            if not response.content.strip():
+                logging.error("Empty response received")
+                return "Empty response received"
             response.raise_for_status()
             response_data = response.json()
+            # Check for specific error in response
+            if response_data.get("error") == "INVALID_RIKISHI_ID":
+                logging.error("Invalid rikishi id")
+                return "Invalid rikishi id"  # Stop execution for this iteration
             # Save the file in the new directory
             with open(os.path.join(self.output_dir, f"{iter_val}.json"), "w") as file:
                 json.dump(response_data, file)
             logging.info(f"API call successful for: {iter_val}")
         except requests.RequestException as e:
+            logging.error(f"Error fetching data for {iter_val}: {e}")
+        except Exception as e:
             logging.error(f"Error fetching data for {iter_val}: {e}")
 
     def setup_logging(self):
