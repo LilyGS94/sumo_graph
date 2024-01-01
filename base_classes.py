@@ -24,7 +24,6 @@ class SumoApiQuery:
 
     def query_endpoint(self, iter_val):
         url = self.base_url.format(iter_val)
-        print(url)
         logging.info(f"Making API call for: {iter_val}")
         try:
             response = self.session.get(url)

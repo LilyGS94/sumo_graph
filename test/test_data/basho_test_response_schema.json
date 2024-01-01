@@ -1,0 +1,126 @@
+{
+  "type": "object",
+  "properties": {
+    "bashoId": {
+      "type": "string"
+    },
+    "division": {
+      "type": "string"
+    },
+    "east": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "side": {
+            "type": "string"
+          },
+          "rikishiID": {
+            "type": "integer"
+          },
+          "shikonaEn": {
+            "type": "string"
+          },
+          "rankValue": {
+            "type": "integer"
+          },
+          "rank": {
+            "type": "string"
+          },
+          "record": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "string"
+                },
+                "opponentShikonaEn": {
+                  "type": "string"
+                },
+                "opponentShikonaJp": {
+                  "type": "string"
+                },
+                "opponentID": {
+                  "type": "integer"
+                },
+                "kimarite": {
+                  "type": "string"
+                }
+              },
+              "required": ["result", "opponentShikonaEn", "opponentShikonaJp", "opponentID", "kimarite"]
+            }
+          },
+          "wins": {
+            "type": "integer"
+          },
+          "losses": {
+            "type": "integer"
+          },
+          "absences": {
+            "type": "integer"
+          }
+        },
+        "required": ["side", "rikishiID", "shikonaEn", "rankValue", "rank", "record", "wins", "losses", "absences"]
+      }
+    },
+    "west": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "side": {
+            "type": "string"
+          },
+          "rikishiID": {
+            "type": "integer"
+          },
+          "shikonaEn": {
+            "type": "string"
+          },
+          "rankValue": {
+            "type": "integer"
+          },
+          "rank": {
+            "type": "string"
+          },
+          "record": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "type": "string"
+                },
+                "opponentShikonaEn": {
+                  "type": "string"
+                },
+                "opponentShikonaJp": {
+                  "type": "string"
+                },
+                "opponentID": {
+                  "type": "integer"
+                },
+                "kimarite": {
+                  "type": "string"
+                }
+              },
+              "required": ["result", "opponentShikonaEn", "opponentShikonaJp", "opponentID", "kimarite"]
+            }
+          },
+          "wins": {
+            "type": "integer"
+          },
+          "losses": {
+            "type": "integer"
+          },
+          "absences": {
+            "type": "integer"
+          }
+        },
+        "required": ["side", "rikishiID", "shikonaEn", "rankValue", "rank", "record", "wins", "losses", "absences"]
+      }
+    }
+  },
+  "required": ["bashoId", "division", "east", "west"]
+}
