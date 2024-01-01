@@ -1,137 +1,10 @@
 import json
 
 import jsonschema
+import pytest
 import requests  # type: ignore
 from jsonschema import validate
 from requests.adapters import HTTPAdapter  # type: ignore
-
-# The JSON schema you provided
-# schema = {
-#   "type": "object",
-#   "properties": {
-#     "bashoId": {
-#       "type": "string"
-#     },
-#     "division": {
-#       "type": "string"
-#     },
-#     "east": {
-#       "type": "array",
-#       "items": {
-#         "type": "object",
-#         "properties": {
-#           "side": {
-#             "type": "string"
-#           },
-#           "rikishiID": {
-#             "type": "integer"
-#           },
-#           "shikonaEn": {
-#             "type": "string"
-#           },
-#           "rankValue": {
-#             "type": "integer"
-#           },
-#           "rank": {
-#             "type": "string"
-#           },
-#           "record": {
-#             "type": "array",
-#             "items": {
-#               "type": "object",
-#               "properties": {
-#                 "result": {
-#                   "type": "string"
-#                 },
-#                 "opponentShikonaEn": {
-#                   "type": "string"
-#                 },
-#                 "opponentShikonaJp": {
-#                   "type": "string"
-#                 },
-#                 "opponentID": {
-#                   "type": "integer"
-#                 },
-#                 "kimarite": {
-#                   "type": "string"
-#                 }
-#               },
-#               "required": ["result", "opponentShikonaEn", "opponentShikonaJp", "opponentID", "kimarite"]
-#             }
-#           },
-#           "wins": {
-#             "type": "integer"
-#           },
-#           "losses": {
-#             "type": "integer"
-#           },
-#           "absences": {
-#             "type": "integer"
-#           }
-#         },
-#         "required": ["side", "rikishiID", "shikonaEn", "rankValue", "rank", "record", "wins", "losses", "absences"]
-#       }
-#     },
-#     "west": {
-#       "type": "array",
-#       "items": {
-#         "type": "object",
-#         "properties": {
-#           "side": {
-#             "type": "string"
-#           },
-#           "rikishiID": {
-#             "type": "integer"
-#           },
-#           "shikonaEn": {
-#             "type": "string"
-#           },
-#           "rankValue": {
-#             "type": "integer"
-#           },
-#           "rank": {
-#             "type": "string"
-#           },
-#           "record": {
-#             "type": "array",
-#             "items": {
-#               "type": "object",
-#               "properties": {
-#                 "result": {
-#                   "type": "string"
-#                 },
-#                 "opponentShikonaEn": {
-#                   "type": "string"
-#                 },
-#                 "opponentShikonaJp": {
-#                   "type": "string"
-#                 },
-#                 "opponentID": {
-#                   "type": "integer"
-#                 },
-#                 "kimarite": {
-#                   "type": "string"
-#                 }
-#               },
-#               "required": ["result", "opponentShikonaEn", "opponentShikonaJp", "opponentID", "kimarite"]
-#             }
-#           },
-#           "wins": {
-#             "type": "integer"
-#           },
-#           "losses": {
-#             "type": "integer"
-#           },
-#           "absences": {
-#             "type": "integer"
-#           }
-#         },
-#         "required": ["side", "rikishiID", "shikonaEn", "rankValue", "rank", "record", "wins", "losses", "absences"]
-#       }
-#     }
-#   },
-#   "required": ["bashoId", "division", "east", "west"]
-# }
 
 
 def load_schema(file_path):
@@ -139,11 +12,25 @@ def load_schema(file_path):
         return json.load(file)
 
 
-def test_response_schema():
+# Parametrize decorator to run the test with different URL and schema values
+@pytest.mark.parametrize(
+    "url, schema_file",
+    [
+        (
+            "https://www.sumo-api.com/api/basho/202301/banzuke/Makuuchi",
+            "./test_data/basho_test_response_schema.json",
+        ),
+        (
+            "https://www.sumo-api.com/api/rikishi/1?intai=true",
+            "./test_data/rikishi_test_response_schema.json",
+        ),
+    ],
+)
+def test_response_schema(url, schema_file):
     # Load the schema
-    schema = load_schema("./test_data/basho_test_response_schema.json")
+    schema = load_schema(schema_file)
     # Set up the session and make the request
-    url = "https://www.sumo-api.com/api/basho/202301/banzuke/Makuuchi"
+    # url = "https://www.sumo-api.com/api/basho/202301/banzuke/Makuuchi"
     session = requests.Session()
     adapter = HTTPAdapter(pool_connections=20, pool_maxsize=20)
     session.mount("https://", adapter)

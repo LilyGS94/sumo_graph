@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "id": { "type": "number" },
+    "sumodbId": { "type": "number" },
+    "nskId": { "type": "number", "optional": true },
+    "shikonaEn": { "type": "string" },
+    "shikonaJp": { "type": "string", "optional": true },
+    "currentRank": { "type": "string", "optional": true },
+    "heya": { "type": "string" },
+    "birthDate": { "type": "string", "format": "date-time" },
+    "shusshin": { "type": "string" },
+    "height": { "type": "number" },
+    "weight": { "type": "number" },
+    "debut": { "type": "string" },
+    "intai": { "type": "string", "format": "date-time", "optional": true }
+  },
+  "required": ["id", "sumodbId", "shikonaEn", "heya", "birthDate", "shusshin", "height", "weight", "debut"]
+}
