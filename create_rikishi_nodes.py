@@ -24,27 +24,31 @@ class AuraDBLoader:
         if self.driver:
             self.driver.close()
 
-    def create_basho_node(self, basho_id):
+    def create_rikishi_node(self, rikishi_data):
         with self.driver.session() as session:
-            # Cypher query to merge a node, preventing duplication
-            query = "MERGE (b:Basho {bashoId: $basho_id}) " "RETURN b"
-            result = session.run(query, basho_id=basho_id)
-            return result.single()[0]
+            # Add a 'name' attribute that's equal to the 'id'
+            rikishi_data["rikishiID"] = rikishi_data.pop("id")
+            rikishi_data["name"] = rikishi_data["rikishiID"]
+
+            # Cypher query to merge a rikishi node, preventing duplication
+            # Cypher query to merge a rikishi node, preventing duplication
+            query = (
+                "MERGE (r:Rikishi {rikishiID: $rikishiID}) "
+                "SET r += $attributes "
+                "RETURN r"
+            )
+            session.run(
+                query, rikishiID=rikishi_data["rikishiID"], attributes=rikishi_data
+            )
 
     def load_jsons_from_folder(self, folder_path):
         for filename in os.listdir(folder_path):
             if filename.endswith(".json"):
                 file_path = os.path.join(folder_path, filename)
                 with open(file_path) as file:
-                    data = json.load(file)
-                    basho_id = data.get(
-                        "bashoId", ""
-                    )  # Get bashoId or default to empty string
-                    if basho_id:  # Check if basho_id is not empty
-                        self.create_basho_node(basho_id)
-                        print(f"Processed and created node for {filename}")
-                    else:
-                        print(f"Skipped {filename} due to empty bashoId")
+                    rikishi_data = json.load(file)
+                    self.create_rikishi_node(rikishi_data)
+                print(f"Processed {filename}")
 
     def get_most_recent_directory(self, base_path):
         # Get all directories in the base path
@@ -71,8 +75,8 @@ if __name__ == "__main__":
         # Get the most recent directory
         recent_dir = loader.get_most_recent_directory(data_path)
         if recent_dir:
-            basho_folder_path = os.path.join(data_path, recent_dir, "basho")
-            loader.load_jsons_from_folder(basho_folder_path)
+            rikishi_folder_path = os.path.join(data_path, recent_dir, "rikishi")
+            loader.load_jsons_from_folder(rikishi_folder_path)
         else:
             print("No recent directory found")
     finally:
