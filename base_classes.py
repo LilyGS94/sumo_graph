@@ -1,10 +1,12 @@
 import json
 import logging
 import os
+import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import requests  # type: ignore
+from neo4j import GraphDatabase
 from requests.adapters import HTTPAdapter  # type: ignore
 
 
@@ -62,3 +64,29 @@ class SumoApiQuery:
             os.makedirs(self.output_dir)
         with ThreadPoolExecutor() as executor:
             executor.map(self.query_endpoint, self.iters)
+
+
+class AuraDBLoader:
+    def __init__(self, uri, user, password):
+        self.driver = GraphDatabase.driver(uri, auth=(user, password))
+
+    def close(self):
+        if self.driver:
+            self.driver.close()
+
+    def get_most_recent_directory(self, base_path):
+        # Get all directories in the base path
+        directories = [
+            d
+            for d in os.listdir(base_path)
+            if os.path.isdir(os.path.join(base_path, d))
+        ]
+        # Filter directories by the YYYYMM pattern
+        date_dirs = [d for d in directories if re.match(r"\d{6}", d)]
+        # Sort directories by date, descending
+        date_dirs.sort(key=lambda date: datetime.strptime(date, "%Y%m"), reverse=True)
+        # Return the most recent directory, if available
+        if date_dirs:
+            return date_dirs[0]
+        else:
+            return None
