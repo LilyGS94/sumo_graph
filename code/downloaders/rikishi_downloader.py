@@ -1,7 +1,7 @@
 import json
 import os
 
-from base_classes import SumoApiQuery
+from ..base_code.base_classes import SumoApiQuery
 
 
 class SumoApiQueryRikishi(SumoApiQuery):
@@ -9,7 +9,7 @@ class SumoApiQueryRikishi(SumoApiQuery):
         super().__init__()
         self.base_url = "https://www.sumo-api.com/api/rikishi/{}?intai=true"
         self.output_dir = f"data/{self.now}/rikishi"
-        self.log_file_name = "sumo_api_query_rikishi.log"
+        self.log_file_name = "../../sumo_api_query_rikishi.log"
 
     def get_latest_directory(self):
         # List all directories in the base directory

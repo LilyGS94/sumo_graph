@@ -1,12 +1,12 @@
 import os
+from code.base_code.base_classes import AuraDBLoader, SumoApiQuery
+from code.downloaders.basho_downloader import SumoApiQueryBasho
+from code.downloaders.rikishi_downloader import SumoApiQueryRikishi
+from code.node_builders.create_rikishi_nodes import AuraDBLoaderRikishiNodes
 from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-
-from base_classes import SumoApiQuery
-from get_rikishi_information import SumoApiQueryRikishi
-from pulling_data import SumoApiQueryBasho
 
 
 @pytest.fixture
@@ -24,8 +24,8 @@ def fixed_datetime():
 
 
 class TestSumoApiQuery:
-    @patch("base_classes.requests.Session")  # Mock the Session
-    @patch("base_classes.datetime")
+    @patch("code.base_code.base_classes.requests.Session")  # Mock the Session
+    @patch("code.base_code.base_classes.datetime")
     def test_init(self, mock_datetime, mock_session, fixed_datetime):
         mock_datetime.now.return_value = fixed_datetime
 
@@ -35,7 +35,7 @@ class TestSumoApiQuery:
         sumo_query = SumoApiQuery()
         # Assert the properties of sumo_query
         assert sumo_query.now == fixed_datetime.strftime("%Y%m")
-        assert sumo_query.log_file_name == "sumo_api_query_basho.log"
+        assert sumo_query.log_file_name == "../../sumo_api_query_basho.log"
         assert sumo_query.iters is None
         assert (
             sumo_query.base_url
@@ -54,11 +54,15 @@ class TestSumoApiQuery:
         mock_open = MagicMock()
         mock_json_dump = MagicMock()
         mock_os_join = MagicMock()
-        monkeypatch.setattr("base_classes.requests.Session.get", mock_get)
+        monkeypatch.setattr(
+            "code.base_code.base_classes.requests.Session.get", mock_get
+        )
         monkeypatch.setattr("builtins.open", mock_open)
-        monkeypatch.setattr("base_classes.json.dump", mock_json_dump)
-        monkeypatch.setattr("base_classes.os.path.join", mock_os_join)
-        with patch("base_classes.logging.info"), patch("base_classes.logging.error"):
+        monkeypatch.setattr("code.base_code.base_classes.json.dump", mock_json_dump)
+        monkeypatch.setattr("code.base_code.base_classes.os.path.join", mock_os_join)
+        with patch("code.base_code.base_classes.logging.info"), patch(
+            "code.base_code.base_classes.logging.error"
+        ):
             sumo_query = SumoApiQuery()
             sumo_query.query_endpoint("202301")
         expected_url = sumo_query.base_url.format(
@@ -75,15 +79,19 @@ class TestSumoApiQuery:
     def test_setup_logging(self, monkeypatch):
         # Test setup_logging method
         mock_logging = MagicMock()
-        monkeypatch.setattr("base_classes.logging.basicConfig", mock_logging)
+        monkeypatch.setattr(
+            "code.base_code.base_classes.logging.basicConfig", mock_logging
+        )
         sumo_query = SumoApiQuery()
         sumo_query.setup_logging()
         mock_logging.assert_called_once()
 
-    @patch("base_classes.SumoApiQuery.query_endpoint")  # Mock the query_endpoint method
-    @patch("base_classes.logging")  # Mock the logging module
-    @patch("base_classes.os.path.exists")
-    @patch("base_classes.os.makedirs")
+    @patch(
+        "code.base_code.base_classes.SumoApiQuery.query_endpoint"
+    )  # Mock the query_endpoint method
+    @patch("code.base_code.base_classes.logging")  # Mock the logging module
+    @patch("code.base_code.base_classes.os.path.exists")
+    @patch("code.base_code.base_classes.os.makedirs")
     def test_run_queries(
         self, mock_makedirs, mock_path_exists, mock_logging, mock_query_endpoint
     ):
@@ -105,7 +113,7 @@ class TestSumoApiQuery:
 
 
 class TestSumoApiQueryBasho:
-    @patch("pulling_data.datetime")
+    @patch("code.downloaders.basho_downloader.datetime")
     def test_generate_timestamps(self, mock_datetime, fixed_datetime):
         # Mock the datetime to return a fixed date
         mock_datetime.now.return_value = fixed_datetime  # Example date: April 1, 2023
@@ -133,9 +141,9 @@ class TestSumoApiQueryBasho:
 
 
 class TestSumoApiQueryRikishi:
-    @patch("get_rikishi_information.os.path.getmtime")
-    @patch("get_rikishi_information.os.path.isdir")
-    @patch("get_rikishi_information.os.listdir")
+    @patch("code.downloaders.rikishi_downloader.os.path.getmtime")
+    @patch("code.downloaders.rikishi_downloader.os.path.isdir")
+    @patch("code.downloaders.rikishi_downloader.os.listdir")
     def test_get_latest_directory(
         self, mock_listdir, mock_isdir, mock_getmtime, base_directory_and_dirs
     ):
@@ -165,7 +173,7 @@ class TestSumoApiQueryRikishi:
             result == "/fake/base/dir/dir3/basho"
         ), "Incorrect latest directory returned"
 
-    @patch("get_rikishi_information.os.listdir")
+    @patch("code.downloaders.rikishi_downloader.os.listdir")
     def test_get_latest_directory_empty(self, mock_listdir, base_directory_and_dirs):
         base_directory, _ = base_directory_and_dirs
         mock_listdir.return_value = []
@@ -177,3 +185,95 @@ class TestSumoApiQueryRikishi:
         # Assertion for empty directory
         mock_listdir.assert_called_once_with(base_directory)
         assert result is None, "Expected None for empty base directory"
+
+
+class TestAuraDBLoader:
+    @pytest.fixture(autouse=True)
+    def setup_env_vars(self, monkeypatch):
+        # Correctly use monkeypatch as an argument to the method
+        monkeypatch.setenv("uri", "neo4j+s://test_uri")
+        monkeypatch.setenv("username", "test_user")
+        monkeypatch.setenv("password", "test_password")
+
+    def test_initialization(self, mocker):
+        # Mock the GraphDatabase.driver method
+        mock_driver = mocker.patch("code.base_code.base_classes.GraphDatabase.driver")
+        mocker.patch("code.base_code.base_classes.load_dotenv")
+
+        loader = AuraDBLoader()
+        print(loader)
+        # Assertions to verify correct initialization
+        mock_driver.assert_called_once_with(
+            "neo4j+s://test_uri", auth=("test_user", "test_password")
+        )
+
+    def test_close(self, mocker):
+        # Mock the driver instance to verify close is called on it
+        mock_driver_instance = mocker.MagicMock()
+        mocker.patch(
+            "code.base_code.base_classes.GraphDatabase.driver",
+            return_value=mock_driver_instance,
+        )
+
+        loader = AuraDBLoader()
+        loader.close()
+
+        # Verify close was called
+        mock_driver_instance.close.assert_called_once()
+
+    def test_get_most_recent_directory(self, mocker):
+        # Mock os.listdir and os.path.isdir to simulate filesystem behavior
+        mocker.patch(
+            "code.base_code.base_classes.os.listdir",
+            return_value=["202301", "202302", "202203", "not_a_date"],
+        )
+        mocker.patch("code.base_code.base_classes.os.path.isdir", lambda x: True)
+
+        loader = AuraDBLoader()
+        most_recent_dir = loader.get_most_recent_directory("base_path")
+
+        # Assert the correct directory is identified
+        assert most_recent_dir == "202302"
+
+
+# node testers
+class TestAuraDBLoaderRikishiNodes:
+    @pytest.fixture(autouse=True)
+    def setup_env_vars(self, monkeypatch):
+        monkeypatch.setenv("uri", "neo4j+s://test_uri")
+        monkeypatch.setenv("username", "neo4j")
+        monkeypatch.setenv("password", "test")
+
+    @patch("code.base_code.base_classes.GraphDatabase.driver", return_value=MagicMock())
+    def test_create_rikishi_node(self, mock_driver):
+        # Setup the mock for the session context manager
+        mock_session = MagicMock()
+        mock_driver.return_value.session.return_value.__enter__.return_value = (
+            mock_session
+        )
+
+        # Instantiate the class
+        loader = AuraDBLoaderRikishiNodes()
+
+        # Test data
+        rikishi_data = {"id": "12345", "other_attribute": "value"}
+
+        # Call the method under test
+        loader.create_rikishi_node(rikishi_data)
+
+        # Expected data after method manipulates it
+        expected_attributes = {
+            "rikishiID": "12345",
+            "name": "12345",
+            "other_attribute": "value",
+        }
+
+        # Assert session.run was called with expected arguments
+        mock_session.run.assert_called_once_with(
+            "MERGE (r:Rikishi {rikishiID: $rikishiID}) SET r += $attributes RETURN r",
+            rikishiID="12345",
+            attributes=expected_attributes,
+        )
+
+
+# relationship testers

@@ -10,18 +10,10 @@ from dotenv import load_dotenv
 from neo4j import GraphDatabase
 from requests.adapters import HTTPAdapter  # type: ignore
 
-# data_path = "data"  # Path to the 'data' directory
-# # Load the .env file
-# load_dotenv()
-# # Accessing variables
-# password = os.environ.get("password")
-# uri = os.environ.get("uri")
-# username = os.environ.get("username")
-
 
 class SumoApiQuery:
     def __init__(self, iters=None, pool_size=20):
-        self.log_file_name = "sumo_api_query_basho.log"
+        self.log_file_name = "../../sumo_api_query_basho.log"
         self.iters = iters
         self.base_url = "https://www.sumo-api.com/api/basho/{}/banzuke/Makuuchi"
         self.session = requests.Session()
@@ -81,7 +73,7 @@ class AuraDBLoader:
         self.uri = os.environ.get("uri")
         self.user = os.environ.get("username")
         self.password = os.environ.get("password")
-        self.data_path = "data"
+        self.data_path = "../../data"
         self.driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
 
     def close(self):

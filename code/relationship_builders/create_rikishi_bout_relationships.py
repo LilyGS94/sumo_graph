@@ -1,7 +1,7 @@
 import json
 import os
 
-from base_classes import AuraDBLoader
+from ..base_code.base_classes import AuraDBLoader
 
 
 class AuraDBLoaderRikishiBoutRelationships(AuraDBLoader):
@@ -37,7 +37,6 @@ class AuraDBLoaderRikishiBoutRelationships(AuraDBLoader):
                         print(f"Skipped {filename} due to empty rikishiId")
 
 
-# Main execution
 if __name__ == "__main__":
     loader = AuraDBLoaderRikishiBoutRelationships()
     try:

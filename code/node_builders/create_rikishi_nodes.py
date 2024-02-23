@@ -1,7 +1,7 @@
 import json
 import os
 
-from base_classes import AuraDBLoader
+from ..base_code.base_classes import AuraDBLoader
 
 
 class AuraDBLoaderRikishiNodes(AuraDBLoader):
@@ -35,7 +35,6 @@ class AuraDBLoaderRikishiNodes(AuraDBLoader):
                 print(f"Processed {filename}")
 
 
-# Main execution
 if __name__ == "__main__":
     loader = AuraDBLoaderRikishiNodes()
     try:
