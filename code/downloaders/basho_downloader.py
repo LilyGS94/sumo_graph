@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from base_classes import SumoApiQuery
+from ..base_code.base_classes import SumoApiQuery
 
 
 class SumoApiQueryBasho(SumoApiQuery):
@@ -26,3 +26,4 @@ if __name__ == "__main__":
     print(f"Generated {len(query.iters)} timestamps to query.")
     query.run_queries()
     print("Process completed.")
+    # example command for running this module python -m code.downloaders.pulling_data

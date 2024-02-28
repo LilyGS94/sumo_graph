@@ -4,7 +4,7 @@ import os
 import pandas as pd
 from tqdm import tqdm
 
-from base_classes import AuraDBLoader
+from ..base_code.base_classes import AuraDBLoader
 
 
 class AuraDBLoaderBoutNodes(AuraDBLoader):
@@ -151,54 +151,7 @@ class AuraDBLoaderBoutNodes(AuraDBLoader):
                             no_match_df.rename(
                                 columns={"bashoId_rikishi1": "bashoId"}, inplace=True
                             )
-                            #     for index, row in tqdm(all_records.iterrows()):
-                            #         result = (
-                            #             row["result"] if pd.notna(row.get("result", "")) else ""
-                            #         )
-                            #         opponentShikonaEn = (
-                            #             row["opponentShikonaEn"]
-                            #             if pd.notna(row.get("opponentShikonaEn", ""))
-                            #             else ""
-                            #         )
-                            #         opponentID = (
-                            #             row["opponentID"]
-                            #             if pd.notna(row.get("opponentID", ""))
-                            #             else ""
-                            #         )
-                            #         kimarite = (
-                            #             row["kimarite"]
-                            #             if pd.notna(row.get("kimarite", ""))
-                            #             else ""
-                            #         )
-                            #         RikishiID = (
-                            #             row["RikishiID"]
-                            #             if pd.notna(row.get("RikishiID", ""))
-                            #             else ""
-                            #         )
-                            #         Fight_Number = (
-                            #             row["Fight_Number"]
-                            #             if pd.notna(row.get("Fight_Number", 0))
-                            #             else 0
-                            #         )
-                            #         Side = row["Side"] if pd.notna(row.get("Side", "")) else ""
-                            #         bashoId = (
-                            #             row["bashoId"]
-                            #             if pd.notna(row.get("bashoId", ""))
-                            #             else ""
-                            #         )
-                            #         self.create_bout_node(
-                            #             result=result,
-                            #             opponentShikonaEn=opponentShikonaEn,
-                            #             opponentID=opponentID,
-                            #             kimarite=kimarite,
-                            #             RikishiID=RikishiID,
-                            #             Fight_Number=Fight_Number,
-                            #             Side=Side,
-                            #             basho=bashoId,
-                            #         )
-                            # else:
-                            #     print(f"Skipped {filename} because of missing data")
-                            #     continue
+
                             for index, row in unique_matches_df.iterrows():
                                 result_rikishi1 = (
                                     row["result_rikishi1"]
@@ -323,7 +276,6 @@ class AuraDBLoaderBoutNodes(AuraDBLoader):
                         continue
 
 
-# Main execution
 if __name__ == "__main__":
     loader = AuraDBLoaderBoutNodes()
     try:

@@ -1,7 +1,7 @@
 import json
 import os
 
-from base_classes import AuraDBLoader
+from ..base_code.base_classes import AuraDBLoader
 
 
 class AuraDBLoaderBashoNodes(AuraDBLoader):
@@ -31,7 +31,6 @@ class AuraDBLoaderBashoNodes(AuraDBLoader):
                         print(f"Skipped {filename} due to empty bashoId")
 
 
-# Main execution
 if __name__ == "__main__":
     loader = AuraDBLoaderBashoNodes()
     try:
