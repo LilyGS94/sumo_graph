@@ -1,0 +1,43 @@
+attrs @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_8d7cifg9jt/croot/attrs_1695717834289/work
+certifi==2023.11.17
+cfgv==3.4.0
+charset-normalizer==3.3.2
+distlib==0.3.8
+exceptiongroup==1.2.0
+filelock==3.13.1
+graphdatascience==1.9
+identify==2.5.33
+idna==3.6
+iniconfig==2.0.0
+jsonschema @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_2dizrcxtjs/croot/jsonschema_1699041625297/work
+jsonschema-specifications @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_a8fa_vbpr0/croot/jsonschema-specifications_1699032391984/work
+multimethod==1.10
+mypy==1.8.0
+mypy-extensions==1.0.0
+neo4j==5.16.0
+nodeenv==1.8.0
+numpy==1.26.3
+packaging==23.2
+pandas==2.2.0
+platformdirs==4.1.0
+pluggy==1.3.0
+pre-commit==3.6.0
+pyarrow==14.0.2
+pytest==7.4.3
+pytest-mock==3.12.0
+python-dateutil==2.8.2
+python-dotenv==1.0.1
+pytz==2023.3.post1
+PyYAML==6.0.1
+referencing @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_15mb8b6xor/croot/referencing_1699012045485/work
+requests==2.31.0
+rpds-py @ file:///private/var/folders/c_/qfmhj66j0tn016nkx_th4hxm0000gp/T/abs_e9l2yxcal2/croot/rpds-py_1698945951668/work
+six==1.16.0
+textdistance==4.6.1
+tomli==2.0.1
+tqdm==4.66.1
+types-requests==2.31.0.10
+typing_extensions==4.9.0
+tzdata==2023.4
+urllib3==2.1.0
+virtualenv==20.25.0
