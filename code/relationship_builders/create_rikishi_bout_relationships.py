@@ -22,7 +22,7 @@ class AuraDBLoaderRikishiBoutRelationships(AuraDBLoader):
                 return None  # Or handle this case as you see fit
             return record[0]
 
-    def run_create_basho_bout_relationship(self, folder_path):
+    def run_create_rikishi_bout_relationship(self, folder_path):
         for filename in os.listdir(folder_path):
             if filename.endswith(".json"):
                 file_path = os.path.join(folder_path, filename)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
         recent_dir = loader.get_most_recent_directory(loader.data_path)
         if recent_dir:
             basho_folder_path = os.path.join(loader.data_path, recent_dir, "rikishi")
-            loader.run_create_basho_bout_relationship(basho_folder_path)
+            loader.run_create_rikishi_bout_relationship(basho_folder_path)
         else:
             print("No recent directory found")
     finally:

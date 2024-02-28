@@ -1,10 +1,19 @@
+import json
 import os
 from code.base_code.base_classes import AuraDBLoader, SumoApiQuery
 from code.downloaders.basho_downloader import SumoApiQueryBasho
 from code.downloaders.rikishi_downloader import SumoApiQueryRikishi
+from code.node_builders.create_basho_nodes import AuraDBLoaderBashoNodes
+from code.node_builders.create_bout_nodes import AuraDBLoaderBoutNodes
 from code.node_builders.create_rikishi_nodes import AuraDBLoaderRikishiNodes
+from code.relationship_builders.create_basho_bout_relationships import (
+    AuraDBLoaderBashoBoutRelationships,
+)
+from code.relationship_builders.create_rikishi_bout_relationships import (
+    AuraDBLoaderRikishiBoutRelationships,
+)
 from datetime import datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, call, mock_open, patch
 
 import pytest
 
@@ -275,5 +284,373 @@ class TestAuraDBLoaderRikishiNodes:
             attributes=expected_attributes,
         )
 
+    @patch(
+        "code.node_builders.create_rikishi_nodes.AuraDBLoaderRikishiNodes.create_rikishi_node"
+    )
+    @patch(
+        "builtins.open",
+        new_callable=mock_open,
+        read_data=json.dumps({"id": "123", "name": "Test Rikishi"}),
+    )
+    @patch("os.path.join", return_value="/fakepath/fakedir/fakefile.json")
+    @patch("os.listdir", return_value=["basho1.json", "basho2.json"])
+    def test_load_jsons_and_create_rikishi_nodes(
+        self, mock_listdir, mock_join, mock_file, mock_create_bout_node
+    ):
+        # Instantiate the loader here
+        loader = AuraDBLoaderRikishiNodes()
 
-# relationship testers
+        folder_path = "/fakepath/fakedir"
+        loader.load_jsons_and_create_rikishi_nodes(folder_path)
+
+        # Verify that listdir was called with the correct path
+        mock_listdir.assert_called_once_with(folder_path)
+
+        # Since we have 2 files, we expect 2 calls to create_rikishi_node.
+        expected_data = {"id": "123", "name": "Test Rikishi"}
+        expected_calls = [call(expected_data) for _ in range(2)]
+        mock_create_bout_node.assert_has_calls(expected_calls, any_order=True)
+
+        # Ensure the method attempts to process exactly 2 files.
+        assert mock_create_bout_node.call_count == 2
+
+
+class TestAuraDBLoaderBashoNodes:
+    @pytest.fixture(autouse=True)
+    def setup_env_vars(self, monkeypatch):
+        monkeypatch.setenv("uri", "neo4j+s://test_uri")
+        monkeypatch.setenv("username", "neo4j")
+        monkeypatch.setenv("password", "test")
+
+    @patch("code.base_code.base_classes.GraphDatabase.driver", return_value=MagicMock())
+    def test_create_basho_node(self, mock_driver):
+        # Setup the mock for the session context manager
+        mock_session = MagicMock()
+        mock_driver.return_value.session.return_value.__enter__.return_value = (
+            mock_session
+        )
+
+        # Instantiate the class
+        loader = AuraDBLoaderBashoNodes()
+
+        # Call the method under test
+        loader.create_basho_node("202001")
+
+        # Assert session.run was called with expected arguments
+        mock_session.run.assert_called_once_with(
+            "MERGE (b:Basho {bashoId: $basho_id}) " "RETURN b", basho_id="202001"
+        )
+
+    @patch(
+        "code.node_builders.create_basho_nodes.AuraDBLoaderBashoNodes.create_basho_node"
+    )
+    @patch(
+        "builtins.open",
+        new_callable=mock_open,
+        read_data=json.dumps({"bashoId": "195803"}),
+    )
+    @patch("os.path.join", return_value="/fakepath/fakedir/fakefile.json")
+    @patch("os.listdir", return_value=["basho1.json", "basho2.json"])
+    def test_load_jsons_from_folder_and_create_basho_nodes(
+        self, mock_listdir, mock_join, mock_file, mock_create_basho_node
+    ):
+        # Instantiate the loader here
+        loader = AuraDBLoaderBashoNodes()
+
+        folder_path = "/fakepath/fakedir"
+        loader.load_jsons_from_folder_and_create_basho_nodes(folder_path)
+
+        # Verify that listdir was called with the correct path
+        mock_listdir.assert_called_once_with(folder_path)
+
+        # Since we have 2 files, we expect 2 calls to create_rikishi_node.
+        expected_data = "195803"
+        expected_calls = [call(expected_data) for _ in range(2)]
+        mock_create_basho_node.assert_has_calls(expected_calls, any_order=True)
+
+        # Ensure the method attempts to process exactly 2 files.
+        assert mock_create_basho_node.call_count == 2
+
+
+class TestAuraDBLoaderBoutNodes:
+    @pytest.fixture(autouse=True)
+    def setup_env_vars(self, monkeypatch):
+        monkeypatch.setenv("uri", "neo4j+s://test_uri")
+        monkeypatch.setenv("username", "neo4j")
+        monkeypatch.setenv("password", "test")
+
+    @patch("code.base_code.base_classes.GraphDatabase.driver", return_value=MagicMock())
+    def test_create_bout_node(self, mock_driver):
+        # Setup the mock for the session context manager
+        mock_session = MagicMock()
+        mock_driver.return_value.session.return_value.__enter__.return_value = (
+            mock_session
+        )
+
+        expected_attributes = {
+            "result_rikishi1": "win",
+            "RikishiID_rikishi1": 123,
+            "Side_rikishi1": "east",
+            "kimarite": "technique",
+            "result_rikishi2": "loss",
+            "Fight_Number": 12,
+            "RikishiID_rikishi2": 456,
+            "Side_rikishi2": "west",
+            "bashoId": "195903",
+        }
+        # Instantiate the class
+        loader = AuraDBLoaderBoutNodes()
+
+        # Call the method under test
+        loader.create_bout_node(
+            result_rikishi1=expected_attributes["result_rikishi1"],
+            RikishiID_rikishi1=expected_attributes["RikishiID_rikishi1"],
+            Side_rikishi1=expected_attributes["Side_rikishi1"],
+            kimarite=expected_attributes["kimarite"],
+            result_rikishi2=expected_attributes["result_rikishi2"],
+            Fight_Number=expected_attributes["Fight_Number"],
+            RikishiID_rikishi2=expected_attributes["RikishiID_rikishi2"],
+            Side_rikishi2=expected_attributes["Side_rikishi2"],
+            bashoId=expected_attributes["bashoId"],
+        )
+
+        expected_query = """MERGE (b:Bout {result_rikishi1: $result_rikishi1,rikishiId_rikishi1: $RikishiID_rikishi1,
+                                          side_rikishi1: $Side_rikishi1, fightNumber: $Fight_Number,
+                                           kimarite: $kimarite, result_rikishi2: $result_rikishi2,
+                                           rikishiId_rikishi2: $RikishiID_rikishi2,
+                                           side_rikishi2: $Side_rikishi2,bashoId:$bashoId})
+                                         RETURN b"""
+        # Normalize whitespace in the expected and actual query strings
+        expected_query_normalized = " ".join(expected_query.split())
+        actual_query_normalized = " ".join(mock_session.run.call_args[0][0].split())
+
+        assert actual_query_normalized == expected_query_normalized
+
+    @patch(
+        "code.node_builders.create_bout_nodes.AuraDBLoaderBoutNodes.create_bout_node"
+    )
+    @patch(
+        "builtins.open",
+        new_callable=mock_open,
+        read_data=json.dumps(
+            {
+                "bashoId": "195803",
+                "division": "Makuuchi",
+                "east": [
+                    {
+                        "side": "East",
+                        "rikishiID": 1404,
+                        "shikonaEn": "Chiyonoyama",
+                        "rankValue": 102,
+                        "rank": "Yokozuna 1 East",
+                        "record": [
+                            {
+                                "result": "win",
+                                "opponentShikonaEn": "Annenyama",
+                                "opponentShikonaJp": "",
+                                "opponentID": 1383,
+                                "kimarite": "sotogake",
+                            }
+                        ],
+                        "wins": 1,
+                        "losses": 0,
+                        "absences": 0,
+                    }
+                ],
+                "west": [
+                    {
+                        "side": "West",
+                        "rikishiID": 1383,
+                        "shikonaEn": "Annenyama",
+                        "rankValue": 103,
+                        "rank": "Yokozuna 1 West",
+                        "record": [
+                            {
+                                "result": "loss",
+                                "opponentShikonaEn": "Chiyonoyama",
+                                "opponentShikonaJp": "",
+                                "opponentID": 1404,
+                                "kimarite": "sotogake",
+                            }
+                        ],
+                        "wins": 0,
+                        "losses": 1,
+                        "absences": 0,
+                    }
+                ],
+            }
+        ),
+    )
+    @patch("os.path.join", return_value="/fakepath/fakedir/fakefile.json")
+    @patch("os.listdir", return_value=["basho1.json", "basho2.json"])
+    def test_load_jsons_and_create_bout_nodes(
+        self, mock_listdir, mock_join, mock_file, mock_create_bout_node
+    ):
+        # Instantiate the loader here
+        loader = AuraDBLoaderBoutNodes()
+
+        folder_path = "/fakepath/fakedir"
+        loader.load_jsons_from_folder_and_create_bout_nodes(folder_path)
+
+        # Verify that listdir was called with the correct path
+        mock_listdir.assert_called_once_with(folder_path)
+
+        # Since we have 2 files, we expect 2 calls to create_bout_node.
+        expected_calls = [
+            call(
+                result_rikishi1="win",
+                RikishiID_rikishi1=1404,
+                Side_rikishi1="East",
+                kimarite="sotogake",
+                result_rikishi2="loss",
+                Fight_Number=1,
+                RikishiID_rikishi2=1383,
+                Side_rikishi2="West",
+                bashoId="basho1",
+            ),
+            call(
+                result_rikishi1="win",
+                RikishiID_rikishi1=1404,
+                Side_rikishi1="East",
+                kimarite="sotogake",
+                result_rikishi2="loss",
+                Fight_Number=1,
+                RikishiID_rikishi2=1383,
+                Side_rikishi2="West",
+                bashoId="basho2",
+            ),
+        ]
+        mock_create_bout_node.assert_has_calls(expected_calls, any_order=True)
+
+        # Ensure the method attempts to process exactly 2 files.
+        assert mock_create_bout_node.call_count == 2
+
+
+# relationship builder tests
+class TestAuraDBLoaderBashoBoutRelationships:
+    @pytest.fixture(autouse=True)
+    def setup_env_vars(self, monkeypatch):
+        monkeypatch.setenv("uri", "neo4j+s://test_uri")
+        monkeypatch.setenv("username", "neo4j")
+        monkeypatch.setenv("password", "test")
+
+    @patch("code.base_code.base_classes.GraphDatabase.driver", return_value=MagicMock())
+    def test_create_basho_bout_relationship(self, mock_driver):
+        # Setup the mock for the session context manager
+        mock_session = MagicMock()
+        mock_driver.return_value.session.return_value.__enter__.return_value = (
+            mock_session
+        )
+
+        expected_attributes = {"bashoId": "195903"}
+        # Instantiate the class
+        loader = AuraDBLoaderBashoBoutRelationships()
+
+        # Call the method under test
+        loader.create_basho_bout_relationship(bashoId=expected_attributes["bashoId"])
+
+        expected_query = """
+            MATCH (b:Basho), (b2:Bout)
+            WHERE b.bashoId = $bashoId AND b2.bashoId = $bashoId
+            MERGE (b)-[:BOUT_EVENT]->(b2)
+            """
+        # Normalize whitespace in the expected and actual query strings
+        expected_query_normalized = " ".join(expected_query.split())
+        actual_query_normalized = " ".join(mock_session.run.call_args[0][0].split())
+
+        assert actual_query_normalized == expected_query_normalized
+
+    @patch(
+        "code.relationship_builders.create_basho_bout_relationships.AuraDBLoaderBashoBoutRelationships.create_basho_bout_relationship"
+    )
+    @patch(
+        "builtins.open",
+        new_callable=mock_open,
+        read_data=json.dumps({"bashoId": "195801"}),
+    )
+    @patch("os.path.join", return_value="/fakepath/fakedir/fakefile.json")
+    @patch("os.listdir", return_value=["basho1.json", "basho2.json"])
+    def test_load_jsons_and_create_rikishi_nodes(
+        self, mock_listdir, mock_join, mock_file, mock_create_basho_node
+    ):
+        # Instantiate the loader here
+        loader = AuraDBLoaderBashoBoutRelationships()
+
+        folder_path = "/fakepath/fakedir"
+        loader.run_create_basho_bout_relationship(folder_path)
+
+        # Verify that listdir was called with the correct path
+        mock_listdir.assert_called_once_with(folder_path)
+
+        # Since we have 2 files, we expect 2 calls to create_rikishi_node.
+        expected_calls = [call(bashoId="195801"), call(bashoId="195801")]
+        mock_create_basho_node.assert_has_calls(expected_calls, any_order=True)
+
+        # Ensure the method attempts to process exactly 2 files.
+        assert mock_create_basho_node.call_count == 2
+
+
+class TestAuraDBLoaderRikishiBoutRelationships:
+    @pytest.fixture(autouse=True)
+    def setup_env_vars(self, monkeypatch):
+        monkeypatch.setenv("uri", "neo4j+s://test_uri")
+        monkeypatch.setenv("username", "neo4j")
+        monkeypatch.setenv("password", "test")
+
+    @patch("code.base_code.base_classes.GraphDatabase.driver", return_value=MagicMock())
+    def test_create_rikishi_bout_relationship(self, mock_driver):
+        # Setup the mock for the session context manager
+        mock_session = MagicMock()
+        mock_driver.return_value.session.return_value.__enter__.return_value = (
+            mock_session
+        )
+
+        expected_attributes = {"rikishiId": "1"}
+        # Instantiate the class
+        loader = AuraDBLoaderRikishiBoutRelationships()
+
+        # Call the method under test
+        loader.create_rikishi_bout_relationship(
+            rikishiId=expected_attributes["rikishiId"]
+        )
+
+        expected_query = """MATCH (r:Rikishi)
+                        WHERE r.rikishiID = $rikishiId
+                        WITH r
+                        MATCH (b:Bout)
+                        WHERE b.rikishiId_rikishi1 = r.rikishiID OR b.rikishiId_rikishi2 = r.rikishiID
+                        MERGE (r)-[:RIKISHI_IN_BOUT_EVENT]->(b)"""
+        # Normalize whitespace in the expected and actual query strings
+        expected_query_normalized = " ".join(expected_query.split())
+        actual_query_normalized = " ".join(mock_session.run.call_args[0][0].split())
+
+        assert actual_query_normalized == expected_query_normalized
+
+    @patch(
+        "code.relationship_builders.create_rikishi_bout_relationships.AuraDBLoaderRikishiBoutRelationships.create_rikishi_bout_relationship"
+    )
+    @patch(
+        "builtins.open",
+        new_callable=mock_open,
+        read_data=json.dumps({"id": "123", "name": "Test Rikishi"}),
+    )
+    @patch("os.path.join", return_value="/fakepath/fakedir/fakefile.json")
+    @patch("os.listdir", return_value=["1.json", "2.json"])
+    def test_load_jsons_and_create_rikishi_nodes(
+        self, mock_listdir, mock_join, mock_file, mock_create_basho_node
+    ):
+        # Instantiate the loader here
+        loader = AuraDBLoaderRikishiBoutRelationships()
+
+        folder_path = "/fakepath/fakedir"
+        loader.run_create_rikishi_bout_relationship(folder_path)
+
+        # Verify that listdir was called with the correct path
+        mock_listdir.assert_called_once_with(folder_path)
+
+        # Since we have 2 files, we expect 2 calls to create_rikishi_node.
+        expected_calls = [call(rikishiId="123"), call(rikishiId="123")]
+        mock_create_basho_node.assert_has_calls(expected_calls, any_order=True)
+
+        # Ensure the method attempts to process exactly 2 files.
+        assert mock_create_basho_node.call_count == 2
