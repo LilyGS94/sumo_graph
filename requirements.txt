@@ -8,6 +8,7 @@ graphdatascience==1.9
 identify==2.5.33
 idna==3.6
 iniconfig==2.0.0
+jsonschema==4.19.2
 multimethod==1.10
 mypy==1.8.0
 mypy-extensions==1.0.0
