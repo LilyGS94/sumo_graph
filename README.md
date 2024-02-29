@@ -9,4 +9,8 @@ https://www.sumo-api.com/api-guide
 Endpoints:
 https://www.sumo-api.com/api-guide
 
-
+# How to run
+Clone repo
+Have Aura DB instance set up and save credentials to a .env file in the root of the directory
+pip install requirements.txt
+Run the downloaders and/or node and relationship builders
