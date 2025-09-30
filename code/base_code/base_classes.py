@@ -73,7 +73,10 @@ class AuraDBLoader:
         self.uri = os.environ.get("uri")
         self.user = os.environ.get("username")
         self.password = os.environ.get("password")
-        self.data_path = "../../data"
+        current_file = os.path.abspath(__file__)
+        code_dir = os.path.dirname(current_file)  # code/base_code
+        project_root = os.path.dirname(os.path.dirname(code_dir))  # project root
+        self.data_path = os.path.join(project_root, "data")
         self.driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
 
     def close(self):

@@ -7,7 +7,6 @@ from jsonschema import validate
 from requests.adapters import HTTPAdapter  # type: ignore
 
 
-# hey buddy
 def load_schema(file_path):
     with open(file_path) as file:
         return json.load(file)
