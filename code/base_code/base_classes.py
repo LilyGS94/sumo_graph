@@ -4,6 +4,7 @@ import os
 import re
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
+from pathlib import Path
 
 import requests  # type: ignore
 from dotenv import load_dotenv
@@ -11,9 +12,20 @@ from neo4j import GraphDatabase
 from requests.adapters import HTTPAdapter  # type: ignore
 
 
+def get_project_root() -> Path:
+    """Find the project root by looking for the .git directory."""
+    current_path = Path(__file__).resolve()
+    for parent in [current_path] + list(current_path.parents):
+        if (parent / ".git").exists():
+            return parent
+    # Fallback: assume project root is two levels up from this file
+    return current_path.parent.parent.parent
+
+
 class SumoApiQuery:
     def __init__(self, iters=None, pool_size=20):
-        self.log_file_name = "../../sumo_api_query_basho.log"
+        project_root = get_project_root()
+        self.log_file_name = str(project_root / "sumo_api_query_basho.log")
         self.iters = iters
         self.base_url = "https://www.sumo-api.com/api/basho/{}/banzuke/Makuuchi"
         self.session = requests.Session()
@@ -22,8 +34,8 @@ class SumoApiQuery:
         self.session.mount("http://", adapter)
         # Create a directory named with the current timestamp
         self.now = datetime.now().strftime("%Y%m")
-        self.output_dir = f"data/{self.now}/basho"
-        self.base_directory = "data/"
+        self.output_dir = str(project_root / "data" / self.now / "basho")
+        self.base_directory = str(project_root / "data")
 
     def query_endpoint(self, iter_val):
         url = self.base_url.format(iter_val)
@@ -73,10 +85,8 @@ class AuraDBLoader:
         self.uri = os.environ.get("uri")
         self.user = os.environ.get("username")
         self.password = os.environ.get("password")
-        current_file = os.path.abspath(__file__)
-        code_dir = os.path.dirname(current_file)  # code/base_code
-        project_root = os.path.dirname(os.path.dirname(code_dir))  # project root
-        self.data_path = os.path.join(project_root, "data")
+        project_root = get_project_root()
+        self.data_path = str(project_root / "data")
         self.driver = GraphDatabase.driver(self.uri, auth=(self.user, self.password))
 
     def close(self):

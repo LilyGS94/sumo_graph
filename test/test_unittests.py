@@ -35,8 +35,15 @@ def fixed_datetime():
 class TestSumoApiQuery:
     @patch("code.base_code.base_classes.requests.Session")  # Mock the Session
     @patch("code.base_code.base_classes.datetime")
-    def test_init(self, mock_datetime, mock_session, fixed_datetime):
+    @patch("code.base_code.base_classes.get_project_root")
+    def test_init(
+        self, mock_get_project_root, mock_datetime, mock_session, fixed_datetime
+    ):
+        from pathlib import Path
+
         mock_datetime.now.return_value = fixed_datetime
+        mock_project_root = Path("/fake/project/root")
+        mock_get_project_root.return_value = mock_project_root
 
         # Setup a MagicMock for the Session instance
         mock_session.return_value = MagicMock()
@@ -44,7 +51,9 @@ class TestSumoApiQuery:
         sumo_query = SumoApiQuery()
         # Assert the properties of sumo_query
         assert sumo_query.now == fixed_datetime.strftime("%Y%m")
-        assert sumo_query.log_file_name == "../../sumo_api_query_basho.log"
+        assert sumo_query.log_file_name == str(
+            mock_project_root / "sumo_api_query_basho.log"
+        )
         assert sumo_query.iters is None
         assert (
             sumo_query.base_url
@@ -54,8 +63,10 @@ class TestSumoApiQuery:
 
         # Formatting the datetime object to a string like '202301'
         formatted_date = fixed_datetime.strftime("%Y%m")
-        assert sumo_query.output_dir == f"data/{formatted_date}/basho"
-        assert sumo_query.base_directory == "data/"
+        assert sumo_query.output_dir == str(
+            mock_project_root / "data" / formatted_date / "basho"
+        )
+        assert sumo_query.base_directory == str(mock_project_root / "data")
 
     def test_query_endpoint(self, monkeypatch):
         # Test query_endpoint method
@@ -69,8 +80,9 @@ class TestSumoApiQuery:
         monkeypatch.setattr("builtins.open", mock_open)
         monkeypatch.setattr("code.base_code.base_classes.json.dump", mock_json_dump)
         monkeypatch.setattr("code.base_code.base_classes.os.path.join", mock_os_join)
-        with patch("code.base_code.base_classes.logging.info"), patch(
-            "code.base_code.base_classes.logging.error"
+        with (
+            patch("code.base_code.base_classes.logging.info"),
+            patch("code.base_code.base_classes.logging.error"),
         ):
             sumo_query = SumoApiQuery()
             sumo_query.query_endpoint("202301")
@@ -178,9 +190,9 @@ class TestSumoApiQueryRikishi:
             mock_isdir.call_args[0][0] in full_directories
             for call in mock_isdir.call_args_list
         )
-        assert (
-            result == "/fake/base/dir/dir3/basho"
-        ), "Incorrect latest directory returned"
+        assert result == "/fake/base/dir/dir3/basho", (
+            "Incorrect latest directory returned"
+        )
 
     @patch("code.downloaders.rikishi_downloader.os.listdir")
     def test_get_latest_directory_empty(self, mock_listdir, base_directory_and_dirs):
@@ -338,7 +350,7 @@ class TestAuraDBLoaderBashoNodes:
 
         # Assert session.run was called with expected arguments
         mock_session.run.assert_called_once_with(
-            "MERGE (b:Basho {bashoId: $basho_id}) " "RETURN b", basho_id="202001"
+            "MERGE (b:Basho {bashoId: $basho_id}) RETURN b", basho_id="202001"
         )
 
     @patch(

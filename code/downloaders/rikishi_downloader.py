@@ -1,15 +1,16 @@
 import json
 import os
 
-from ..base_code.base_classes import SumoApiQuery
+from ..base_code.base_classes import SumoApiQuery, get_project_root
 
 
 class SumoApiQueryRikishi(SumoApiQuery):
     def __init__(self):
         super().__init__()
+        project_root = get_project_root()
         self.base_url = "https://www.sumo-api.com/api/rikishi/{}?intai=true"
-        self.output_dir = f"data/{self.now}/rikishi"
-        self.log_file_name = "../../sumo_api_query_rikishi.log"
+        self.output_dir = str(project_root / "data" / self.now / "rikishi")
+        self.log_file_name = str(project_root / "sumo_api_query_rikishi.log")
 
     def get_latest_directory(self):
         # List all directories in the base directory
