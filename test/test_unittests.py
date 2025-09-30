@@ -68,8 +68,17 @@ class TestSumoApiQuery:
         )
         assert sumo_query.base_directory == str(mock_project_root / "data")
 
-    def test_query_endpoint(self, monkeypatch):
+    @patch("code.base_code.base_classes.get_project_root")
+    @patch("code.base_code.base_classes.os.path.exists")
+    @patch("code.base_code.base_classes.os.makedirs")
+    def test_query_endpoint(
+        self, mock_makedirs, mock_exists, mock_get_project_root, monkeypatch
+    ):
+        from pathlib import Path
+
         # Test query_endpoint method
+        mock_get_project_root.return_value = Path("/fake/project/root")
+        mock_exists.return_value = True
         mock_get = MagicMock()
         mock_open = MagicMock()
         mock_json_dump = MagicMock()
@@ -97,8 +106,12 @@ class TestSumoApiQuery:
         mock_json_dump.assert_called_once()
         mock_os_join.assert_called_once()
 
-    def test_setup_logging(self, monkeypatch):
+    @patch("code.base_code.base_classes.get_project_root")
+    def test_setup_logging(self, mock_get_project_root, monkeypatch):
+        from pathlib import Path
+
         # Test setup_logging method
+        mock_get_project_root.return_value = Path("/fake/project/root")
         mock_logging = MagicMock()
         monkeypatch.setattr(
             "code.base_code.base_classes.logging.basicConfig", mock_logging
@@ -107,6 +120,7 @@ class TestSumoApiQuery:
         sumo_query.setup_logging()
         mock_logging.assert_called_once()
 
+    @patch("code.base_code.base_classes.get_project_root")
     @patch(
         "code.base_code.base_classes.SumoApiQuery.query_endpoint"
     )  # Mock the query_endpoint method
@@ -114,9 +128,17 @@ class TestSumoApiQuery:
     @patch("code.base_code.base_classes.os.path.exists")
     @patch("code.base_code.base_classes.os.makedirs")
     def test_run_queries(
-        self, mock_makedirs, mock_path_exists, mock_logging, mock_query_endpoint
+        self,
+        mock_makedirs,
+        mock_path_exists,
+        mock_logging,
+        mock_query_endpoint,
+        mock_get_project_root,
     ):
+        from pathlib import Path
+
         # Setup
+        mock_get_project_root.return_value = Path("/fake/project/root")
         test_iters = ["202301", "202303", "202305"]  # Example iteration values
         output_dir = "temp/dir"
         mock_path_exists.return_value = False
